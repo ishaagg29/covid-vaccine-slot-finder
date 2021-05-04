@@ -14,3 +14,6 @@ This script can be used to find slots for Covid vaccination in your state, distr
 - To find vaccination slots in state Delhi, pincode - 110052 for next 7 days starting from 5th May 2021 for 18+ people.
 
 `python covid_vaccine.py --state Delhi --pincode 110052 --date 05-05-2021 --minAge 18`
+
+## Output :
+- CSV file will be created with the available vaccination slot details.
