@@ -10,13 +10,13 @@ output_file_district = "covid_vaccine_available_slots_your_district.csv"
 output_file_pincode = "covid_vaccine_available_slots_your_pincode.csv"
 
 def get_all_slots_for_a_state(state_name, date, minAge):
-    print "Fetching vaccination slots for state : {} for the next 3 days after : {} for minimum age : {}\n".format(state_name, date, minAge)
+    print("Fetching vaccination slots for state : {} for the next 3 days after : {} for minimum age : {}\n".format(state_name, date, minAge))
     state_id = get_state_id(state_name)
     if(state_id != "Invalid"):
         district_list = get_all_districts_of_a_state(state_id)
         remove_output_file_if_exists(output_file_state)
         with open(output_file_state, 'a') as file:
-            mywriter = csv.DictWriter(file, fieldnames=["vaccine_name", "centre_name", "available_capacity", "fees", "district", "date"])
+            mywriter = csv.DictWriter(file, fieldnames=["vaccine_name", "centre_name", "address", "available_capacity", "fees", "district", "date"])
             mywriter.writeheader()
             for i in range(3):
                 for district in district_list:
@@ -28,6 +28,7 @@ def get_all_slots_for_a_state(state_name, date, minAge):
                             centre_row = dict()
                             centre_row["vaccine_name"] = centre["vaccine"]
                             centre_row["centre_name"] = centre["name"]
+                            centre_row["address"] = centre["address"]
                             centre_row["available_capacity"] = centre["available_capacity"]
                             centre_row["fees"] = centre["fee"]
                             centre_row["district"] = district["district_name"]
@@ -38,15 +39,15 @@ def get_all_slots_for_a_state(state_name, date, minAge):
                         print("No slots available in district : " + str(district["district_id"]) + " for date : " + date)
                 date = (datetime.strptime(date, '%d-%m-%Y') + timedelta(days=1)).strftime('%d-%m-%Y')
     else :
-        print "Invalid state name : {} .. Pls try again using state name in title case!".format(state_name)
+        print("Invalid state name : {} .. Pls try again using state name in title case!".format(state_name))
 
 
 
 def get_all_slots_for_a_district(state_name, district_name, date, minAge):
-    print "Fetching vaccination slots for state : {}, district : {} for the next 7 days after : {} for minimum age : {}\n".format(state_name, district_name, date, minAge)
+    print("Fetching vaccination slots for state : {}, district : {} for the next 7 days after : {} for minimum age : {}\n".format(state_name, district_name, date, minAge))
     remove_output_file_if_exists(output_file_district)
     with open(output_file_district, 'a') as file:
-        mywriter = csv.DictWriter(file, fieldnames=["vaccine_name", "centre_name", "available_capacity", "fees", "district", "date"])
+        mywriter = csv.DictWriter(file, fieldnames=["vaccine_name", "centre_name", "address", "available_capacity", "fees", "district", "date"])
         mywriter.writeheader()
         invalidDistrict = False
         for i in range(7):
@@ -59,25 +60,26 @@ def get_all_slots_for_a_district(state_name, district_name, date, minAge):
                         centre_row = dict()
                         centre_row["vaccine_name"] = centre["vaccine"]
                         centre_row["centre_name"] = centre["name"]
+                        centre_row["address"] = centre["address"]
                         centre_row["available_capacity"] = centre["available_capacity"]
                         centre_row["fees"] = centre["fee"]
                         centre_row["district"] = district_name
                         centre_row["date"] = date
                         mywriter.writerow(centre_row)
                 if(slots_available == False):
-                    print "No slots available for date : " + date
+                    print("No slots available for date : " + date)
                 date = (datetime.strptime(date, '%d-%m-%Y') + timedelta(days=1)).strftime('%d-%m-%Y')
             else :
                 invalidDistrict = True
         if(invalidDistrict):
-            print "Invalid district name : {} ..Pls try again. District names are case sensitive!".format(district_name)
+            print("Invalid district name : {} ..Pls try again. District names are case sensitive!".format(district_name))
 
 def get_slots_by_pincode_and_date(pincode, date, minAge):
-    print "Fetching vaccination slots for pincode : {} for the next 7 days after : {} for minimum age : {}\n".format(pincode, date, minAge)
+    print("Fetching vaccination slots for pincode : {} for the next 7 days after : {} for minimum age : {}\n".format(pincode, date, minAge))
     headers = {"accept": "application/json","Accept-Language": "hi_IN"}
     remove_output_file_if_exists(output_file_pincode)
     with open(output_file_pincode, 'a') as file:
-        mywriter = csv.DictWriter(file, fieldnames=["vaccine_name", "centre_name", "available_capacity", "fees", "pincode", "date"])
+        mywriter = csv.DictWriter(file, fieldnames=["vaccine_name", "centre_name", "address", "available_capacity", "fees", "pincode", "date"])
         mywriter.writeheader()
         for i in range(7):
             response = requests.get("https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByPin?pincode=" + str(pincode) + "&date=" + str(date), headers = headers).text
@@ -89,6 +91,7 @@ def get_slots_by_pincode_and_date(pincode, date, minAge):
                     centre_row = dict()
                     centre_row["vaccine_name"] = centre["vaccine"]
                     centre_row["centre_name"] = centre["name"]
+                    centre_row["address"] = centre["address"]
                     centre_row["available_capacity"] = centre["available_capacity"]
                     centre_row["fees"] = centre["fee"]
                     centre_row["pincode"] = pincode
@@ -96,7 +99,7 @@ def get_slots_by_pincode_and_date(pincode, date, minAge):
                     mywriter.writerow(centre_row)
 
             if(slots_available == False):
-                print "No slots available for date : " + date
+                print("No slots available for date : " + date)
             date = (datetime.strptime(date, '%d-%m-%Y') + timedelta(days=1)).strftime('%d-%m-%Y')
 
 ##----------------Private methods-----
@@ -112,9 +115,9 @@ def get_slots_by_district_id(state_name, district_name, district_id, date):
             # print json.loads(response)["sessions"]
             return json.loads(response)["sessions"]
         else :
-            print "Invalid district name : {} ..Pls try again. District names are case sensitive!".format(district_name)
+            print("Invalid district name : {} ..Pls try again. District names are case sensitive!".format(district_name))
     else :
-        print "Invalid state name : {} .. Pls try again using state name in title case!".format(state_name)
+        print("Invalid state name : {} .. Pls try again using state name in title case!".format(state_name))
 
 
 def get_district_id(state_id, district_name):
