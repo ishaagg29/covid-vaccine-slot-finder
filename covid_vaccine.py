@@ -2,6 +2,7 @@ import requests
 import json
 import csv
 import argparse
+import os
 from datetime import datetime, timedelta
 
 output_file_state = "covid_vaccine_available_slots_your_state.csv"
@@ -13,6 +14,7 @@ def get_all_slots_for_a_state(state_name, date, minAge):
     state_id = get_state_id(state_name)
     if(state_id != "Invalid"):
         district_list = get_all_districts_of_a_state(state_id)
+        remove_output_file_if_exists(output_file_state)
         with open(output_file_state, 'a') as file:
             mywriter = csv.DictWriter(file, fieldnames=["vaccine_name", "centre_name", "available_capacity", "fees", "district", "date"])
             mywriter.writeheader()
@@ -42,6 +44,7 @@ def get_all_slots_for_a_state(state_name, date, minAge):
 
 def get_all_slots_for_a_district(state_name, district_name, date, minAge):
     print "Fetching vaccination slots for state : {}, district : {} for the next 7 days after : {} for minimum age : {}\n".format(state_name, district_name, date, minAge)
+    remove_output_file_if_exists(output_file_district)
     with open(output_file_district, 'a') as file:
         mywriter = csv.DictWriter(file, fieldnames=["vaccine_name", "centre_name", "available_capacity", "fees", "district", "date"])
         mywriter.writeheader()
@@ -72,6 +75,7 @@ def get_all_slots_for_a_district(state_name, district_name, date, minAge):
 def get_slots_by_pincode_and_date(pincode, date, minAge):
     print "Fetching vaccination slots for pincode : {} for the next 7 days after : {} for minimum age : {}\n".format(pincode, date, minAge)
     headers = {"accept": "application/json","Accept-Language": "hi_IN"}
+    remove_output_file_if_exists(output_file_pincode)
     with open(output_file_pincode, 'a') as file:
         mywriter = csv.DictWriter(file, fieldnames=["vaccine_name", "centre_name", "available_capacity", "fees", "pincode", "date"])
         mywriter.writeheader()
@@ -136,6 +140,11 @@ def get_state_id(state_name):
 
     return "Invalid"
 
+def remove_output_file_if_exists(file):
+    try:
+        os.remove(file)
+    except OSError:
+        pass
 
 def main():
     parser = argparse.ArgumentParser()
@@ -158,3 +167,9 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+## How to run :
+#1. python covid_vaccine.py --state Delhi  --date 04-05-2021 --minAge 18
+#2. python covid_vaccine.py --state Karnataka --district BBMP --date 04-05-2021 --minAge 45
+#3. python covid_vaccine.py --state Delhi --pincode 110052 --date 05-05-2021 --minAge 18
